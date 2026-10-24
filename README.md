@@ -29,9 +29,15 @@ npm run build
 ```
 
 Set up a Google Cloud OAuth client (Desktop app), enable the Gmail API, and
-put the credentials in your environment (see `.env.example`). Run the OAuth
-consent flow once to mint a token at `GMAIL_TOKEN_PATH` — that file is
-gitignored and never committed. Then:
+put the credentials in your environment (see `.env.example`). Mint the token
+with the auth helper — it prints a consent URL, you approve, and it saves the
+token at `GMAIL_TOKEN_PATH` (gitignored, never committed):
+
+```bash
+GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... npm run auth
+```
+
+Then:
 
 ```bash
 npm start
