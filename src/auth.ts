@@ -57,6 +57,8 @@ const server = createServer(async (req, res) => {
   const { tokens } = await oauth.getToken(code);
   await fs.mkdir(dirname(tokenPath), { recursive: true });
   await fs.writeFile(tokenPath, JSON.stringify(tokens, null, 2));
+  // Restrictive permissions: this file is live Gmail access. Never commit it.
+  await fs.chmod(tokenPath, 0o600);
   console.log(`Token saved to ${tokenPath}. Next: npm run inspect`);
 });
 server.listen(port);
