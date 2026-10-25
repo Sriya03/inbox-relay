@@ -15,11 +15,18 @@ same thread in both dev and test is leakage):
 - Dev set: ~100 messages, used for iteration and tuning.
 - Locked test set: ~50 messages, scored only for final evaluation. Never tuned
   against. Frozen across versions.
-- Sampling is stratified across all seven labels, across time (recent + older
+- Sampling is stratified across all eight labels, across time (recent + older
   threads), and deliberately includes hard cases.
 
 **Privacy.** Real emails stay local and gitignored. The dataset never enters the
 public repo. The public write-up uses redacted or synthetic examples only.
+Headline rule: sensitive mail data never leaves the owner's machine.
+- The LLM classifier is invoked only for mail already matching job-search
+  signals. Mail from financial institutions, government/immigration, the
+  employer, or anything carrying account/identity documents is never sent to
+  the LLM — rules-only, left untouched unless rules confidently place it.
+- Attachments are never sent to the LLM.
+- Logs store message IDs, labels, confidence, and reasons only — never bodies.
 
 ---
 
@@ -163,6 +170,20 @@ applications would all misclassify as cold outreach.
   context. Low-confidence messages are NOT auto-archived — they stay in the
   inbox for human review, and they are the most valuable adjudication cases.
 
+## Archival policy (locked Oct 24)
+
+Auto-archive is gated on high confidence, confirmed: the rules baseline and
+the LLM classifier must agree AND LLM confidence must be ≥ 0.85. Confidence
+0.6–0.85, or disagreement between the two, stays in the inbox for human
+review; below 0.6 the message is untouched. The 0.85 starting point is
+validated against the golden set to hit ≥95% precision on archived mail
+before any live run.
+
+Asymmetric rule: `interview` and `offer-process` are LABEL-ONLY. The label is
+applied but the message stays in the inbox — a missed interview or offer is
+the costliest failure, and both are low-volume. All other labels follow
+label + archive at the gate.
+
 ---
 
 ## Labeling process (production rules)
@@ -195,3 +216,11 @@ applications would all misclassify as cold outreach.
   (confirmations for manual + auto-applied applications; thread anchor for
   forgotten auto-applications); thread-history rule added for
   cold-outreach vs recruiter/new. Set is now eight labels.
+- **v1 update (Oct 24, 2026, evening):** Safety rules locked per owner
+  direction. High-confidence gate confirmed (rules + LLM agree AND ≥ 0.85;
+  0.6–0.85 or disagreement stays in inbox; < 0.6 untouched; 0.85 validated
+  for ≥95% archive precision before live use). `interview` and
+  `offer-process` are label-only, never auto-archived. Never-LLM sender
+  rule (financial, government/immigration, employer, account/identity
+  documents), LLM sees job-search mail only, attachments never to LLM,
+  logs metadata-only. Sensitive mail data never leaves the owner's machine.
